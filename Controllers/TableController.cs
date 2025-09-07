@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RESTaurang.Dtos;
 using RESTaurang.Services.IServices;
 
 namespace RESTaurang.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/tables")]
     public class TableController : ControllerBase

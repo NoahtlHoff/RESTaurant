@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RESTaurang.Dtos;
 using RESTaurang.Services;
 using RESTaurang.Services.IServices;
 
 namespace RESTaurang.Controllers;
 
+[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("api/bookings")]
 public class BookingsController : ControllerBase
