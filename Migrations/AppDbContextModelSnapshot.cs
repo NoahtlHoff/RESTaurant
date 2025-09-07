@@ -59,9 +59,6 @@ namespace RESTaurang.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CustomerId_FK")
-                        .HasColumnType("int");
-
                     b.Property<int>("Guests")
                         .HasColumnType("int");
 
@@ -69,9 +66,6 @@ namespace RESTaurang.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("TableId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TableId_FK")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

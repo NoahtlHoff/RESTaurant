@@ -6,8 +6,8 @@
     {
         public DateTime StartTime { get; set; }
         public int Guests { get; set; }
-        public int CustomerId_FK { get; set; }
-        public int TableId_FK { get; set; }
+        public int CustomerId { get; set; }
+        public int TableId { get; set; }
     }
 
     public class BookingUpdateDto : BookingCreateDto { }

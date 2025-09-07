@@ -1,69 +1,60 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using RESTaurang.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using RESTaurang.Dtos;
+using RESTaurang.Services;
+using RESTaurang.Services.IServices;
+
+namespace RESTaurang.Controllers;
 
 [ApiController]
-[Route("api/booking")]
+[Route("api/bookings")]
 public class BookingsController : ControllerBase
 {
-    //private readonly BookingService _svc;
-    //private readonly AppDbContext _db;
-    //public BookingsController(BookingService svc, AppDbContext db) { _svc = svc; _db = db; }
+    private readonly IBookingService _bookings;
+    public BookingsController(IBookingService bookings) => _bookings = bookings;
 
-    //// GET /api/bookings/available?startTime=2025-09-03T18:00:00Z&guests=4
-    //[HttpGet("available")]
-    //public async Task<IActionResult> GetAvailable([FromQuery] DateTime startTime, [FromQuery] int guests, CancellationToken ct)
-    //{
-    //    var result = await _svc.GetAvailableAsync(startTime, guests, ct);
-    //    return Ok(result);
-    //}
+    [HttpGet]
+    public async Task<ActionResult<List<BookingReadDto>>> GetAll()
+        => Ok(await _bookings.GetAllAsync());
 
-    //// POST /api/bookings
-    //[Authorize] // skriv kräver JWT
-    //[HttpPost]
-    //public async Task<IActionResult> Create([FromBody] BookingCreateDto dto, CancellationToken ct)
-    //{
-    //    try
-    //    {
-    //        var b = await _svc.CreateAsync(
-    //            tableId: dto.TableId_FK,
-    //            guests: dto.Guests,
-    //            startTime: dto.StartTime,
-    //            customerId: dto.CustomerId_FK,
-    //            ct: ct);
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<BookingReadDto>> GetById(int id)
+    {
+        var dto = await _bookings.GetByIdAsync(id);
+        return dto is null ? NotFound() : Ok(dto);
+    }
 
-    //        var read = new BookingReadDto(
-    //            Id: b.Id,
-    //            StartTime: b.StartTime,
-    //            Guests: b.Guests,
-    //            CustomerId: b.CustomerId_FK,
-    //            TableId: b.TableId_FK
-    //        );
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] BookingCreateDto dto)
+    {
+        var id = await _bookings.CreateAsync(dto);
+        if (id is null)
+            return Conflict(new { message = "Error: Table not available at this time" });
 
-    //        return CreatedAtAction(nameof(GetById), new { id = b.Id }, read);
-    //    }
-    //    catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
-    //    catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
-    //    catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); } // 409
-    //}
+        var created = await _bookings.GetByIdAsync(id.Value);
+        return CreatedAtAction(nameof(GetById), new { id = id.Value }, created);
+    }
 
-    //// GET /api/bookings/123
-    //[HttpGet("{id:int}")]
-    //public async Task<IActionResult> GetById(int id, CancellationToken ct)
-    //{
-    //    var b = await _db.Bookings.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
-    //    if (b == null) return NotFound();
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<BookingReadDto>> Update(int id, [FromBody] BookingUpdateDto dto)
+    {
+        var exists = await _bookings.GetByIdAsync(id);
+        if (exists is null) return NotFound();
 
-    //    var read = new BookingReadDto(
-    //        Id: b.Id,
-    //        StartTime: b.StartTime,
-    //        Guests: b.Guests,
-    //        CustomerId: b.CustomerId_FK,
-    //        TableId: b.TableId_FK
-    //    );
+        var updated = await _bookings.UpdateAsync(id, dto);
+        if (updated is null)
+            return Conflict(new { message = "Time slot unavailable or capacity too low." });
 
-    //    return Ok(read);
-    //}
+        return Ok(updated);
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+        => await _bookings.DeleteAsync(id) ? NoContent() : NotFound();
+
+    [HttpGet("available")]
+    public async Task<ActionResult<List<TableAvailabilityDto>>> GetAvailability([FromQuery] DateTime? start, [FromQuery] int? guests)
+    {
+        var tables = await _bookings.GetAvailableTablesAsync(start, guests);
+        return Ok(tables);
+    }
 }

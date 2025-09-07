@@ -12,8 +12,8 @@ using RESTaurang.Data;
 namespace RESTaurang.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250828125440_init")]
-    partial class init
+    [Migration("20250907104532_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -62,9 +62,6 @@ namespace RESTaurang.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CustomerId_FK")
-                        .HasColumnType("int");
-
                     b.Property<int>("Guests")
                         .HasColumnType("int");
 
@@ -72,9 +69,6 @@ namespace RESTaurang.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("TableId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TableId_FK")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

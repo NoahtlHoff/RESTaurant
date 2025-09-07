@@ -13,51 +13,53 @@ namespace RESTaurang.Services
 
         public async Task<List<TableReadDto>> GetAllTablesAsync()
         {
-            var dtoTables = await _ctx.Tables
-                .Select(t => new TableReadDto(
-                    t.Id,
-                    t.Number,
-                    t.Capacity
-                ))
-                .ToListAsync();
-
-            return dtoTables;
+            return await _ctx.Tables
+            .Select(t => new TableReadDto(t.Id, t.Number, t.Capacity))
+            .AsNoTracking()
+            .ToListAsync();
         }
 
-        public async Task<TableReadDto?> GetTableByIdAsync(int Id)
+        public async Task<TableReadDto?> GetTableByIdAsync(int id)
         {
-            var table = await _ctx.Tables
-                .FirstOrDefaultAsync(t => t.Id == Id);
-
-            return new TableReadDto(table.Id,table.Number,table.Capacity);
+            return await _ctx.Tables
+                .AsNoTracking()
+                .Where(t => t.Id == id)
+                .Select(t => new TableReadDto(t.Id, t.Number, t.Capacity))
+                .FirstOrDefaultAsync();
         }
 
-        public async Task<IActionResult> CreateTableAsync(TableCreateDto tableCreateDto)
+        public async Task<int> CreateTableAsync(TableCreateDto dto)
         {
-            await _ctx.Tables.AddAsync(new Models.Table
-            {
-                Number = tableCreateDto.Number,
-                Capacity = tableCreateDto.Capacity
-            });
-            return await Task.FromResult(new OkResult());
+            var entity = new Models.Table 
+            { 
+                Number = dto.Number, 
+                Capacity = dto.Capacity 
+            };
+            _ctx.Tables.Add(entity);
+
+            await _ctx.SaveChangesAsync();
+
+            return entity.Id;
         }
 
-        public async Task<IActionResult> DeleteTableAsync(int Id)
+        public async Task<bool> UpdateTableAsync(int id, TableUpdateDto dto)
         {
-            await _ctx.Tables.Where(T => T.Id == Id).ExecuteDeleteAsync();
+            var rowsAffected = await _ctx.Tables
+                .Where(t => t.Id == id)
+                .ExecuteUpdateAsync(upd => upd
+                    .SetProperty(t => t.Number, dto.Number)
+                    .SetProperty(t => t.Capacity, dto.Capacity));
 
-            return await Task.FromResult(new OkResult());
+            return rowsAffected > 0;
         }
 
-        public async Task<IActionResult> UpdateTableAsync(int Id, TableUpdateDto tableUpdateDto)
+        public async Task<bool> DeleteTableAsync(int id)
         {
-            await _ctx.Tables
-                .Where(t => t.Id == Id)
-                .ExecuteUpdateAsync(t => t
-                    .SetProperty(t => t.Number, tableUpdateDto.Number)
-                    .SetProperty(t => t.Capacity, tableUpdateDto.Capacity)
-                );
-            return await Task.FromResult(new OkResult());
+            var rowsAffected = await _ctx.Tables
+                .Where(t => t.Id == id)
+                .ExecuteDeleteAsync();
+
+            return rowsAffected > 0;
         }
     }
 }

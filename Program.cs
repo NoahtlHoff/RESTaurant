@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RESTaurang.Data;
-using RESTaurang.Data.RESTaurang.Data;
-using RESTaurang.Endpoints;
+using RESTaurang.Services;
+using RESTaurang.Services.IServices;
 
 namespace RESTaurang
 {
@@ -21,14 +21,16 @@ namespace RESTaurang
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddScoped<BookingService>();
+            
+            builder.Services.AddScoped<ITableService, TableService>();
+            builder.Services.AddScoped<ICustomerService, CustomerService>();
+            builder.Services.AddScoped<IBookingService, BookingService>();
+            builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 
             builder.Services.AddAuthorization(o =>
             {
                 o.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
             });
-            builder.Services.AddAuthorization();
-            builder.Services.AddAuthorization();
 
             var app = builder.Build();
 
@@ -45,16 +47,10 @@ namespace RESTaurang
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            //app.UseAuthorization();
 
 
             app.MapControllers();
-
-            //app.MapMenuItemEndpoints();
-            //app.MapTableEndpoints();
-            //app.MapCustomerEndpoints();
-            //app.MapBookingEndpoints();
-
             app.Run();
         }
     }
