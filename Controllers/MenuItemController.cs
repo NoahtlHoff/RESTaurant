@@ -16,12 +16,14 @@ namespace RESTaurang.Controllers
         public MenuItemController(IMenuItemService menuitem) => _menuitem = menuitem;
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<List<MenuItemReadDto>>> GetAll()
         {
             return Ok(await _menuitem.GetAllAsync());
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<MenuItemReadDto>> GetById(int id)
         {
             var item = await _menuitem.GetByIdAsync(id);
