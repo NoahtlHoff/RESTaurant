@@ -6,7 +6,7 @@ using RESTaurang.Services.IServices;
 
 namespace RESTaurang.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/customers")]
     public class CustomersController : ControllerBase
